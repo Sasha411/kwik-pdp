@@ -27,6 +27,11 @@ export default function CreateTestPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [hasNextPage, setHasNextPage] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
+  const [trafficAllocation, setTrafficAllocation] = useState(50)
+  const [geoTargets, setGeoTargets] = useState([
+    { id: 1, type: "location", value: "Delhi NCR" },
+    { id: 2, type: "referrer", value: "Instagram" }
+  ])
 
   // Fetch products on component mount
   useEffect(() => {
@@ -306,23 +311,41 @@ export default function CreateTestPage() {
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 p-3 border rounded-md">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Delhi NCR</span>
-                  <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
+                {geoTargets.map((target) => (
+                  <div key={target.id} className="flex items-center gap-2 p-3 border rounded-md">
+                    {target.type === "location" ? (
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="text-sm">{target.value}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="ml-auto h-6 w-6"
+                      onClick={() => {
+                        setGeoTargets(geoTargets.filter(t => t.id !== target.id));
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
 
-                <div className="flex items-center gap-2 p-3 border rounded-md">
-                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">Instagram</span>
-                  <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <Button variant="outline" className="w-full mt-2">
+                <Button
+                  variant="outline"
+                  className="w-full mt-2"
+                  onClick={() => {
+                    // In a real app, you'd show a modal or dropdown to select conditions
+                    // For this example, we'll just add a new location
+                    const newId = Math.max(0, ...geoTargets.map(t => t.id)) + 1;
+                    setGeoTargets([...geoTargets, {
+                      id: newId,
+                      type: "location",
+                      value: "Mumbai"
+                    }]);
+                  }}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Condition
                 </Button>
@@ -332,9 +355,14 @@ export default function CreateTestPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium">Traffic Allocation</h3>
-                <span className="text-sm font-medium">50%</span>
+                <span className="text-sm font-medium">{trafficAllocation}%</span>
               </div>
-              <Slider defaultValue={[50]} max={100} step={5} />
+              <Slider
+                value={[trafficAllocation]}
+                max={100}
+                step={5}
+                onValueChange={(value) => setTrafficAllocation(value[0])}
+              />
               <p className="text-xs text-muted-foreground">
                 Percentage of your traffic that will be included in this test
               </p>
